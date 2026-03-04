@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.1.2] — 2026-03-04
+
+### Added
+- **Full cost breakdown** — Dashboard and Analytics now show 7 separate cost slices: Fuel, Service, Tyres, Insurance, Road Tax, MOT, Other. The old "Fuel / Maintenance / Inspection" grouping is gone.
+- **Edit links on Dashboard** — Recent Fuel, Recent Service, and Inspections cards now have inline Edit links for each entry.
+
+### Changed
+- **Single "Add Entry" button** — Replaced separate + Fuel / + Service / + Inspection buttons in the sidebar, Dashboard, and Log headers with a single collapsible "Add Entry" control.
+- **Maintenance categories** are now: Service · Tyres · Insurance · Road Tax · Other.
+- **Edit redirects to Log** — Saving an edited entry returns directly to `/log`.
+- **Log Edit/Delete buttons** now use styled button classes.
+
+### Fixed
+- **Edit/Delete buttons always visible** — Notes column removed from the log table. Notes are still saved and visible in the Edit form.
+
+---
+
 ## [1.1.1] — 2026-03-04
 
 ### Fixed
