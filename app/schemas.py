@@ -59,3 +59,10 @@ class InspectionEntryCreate(BaseModel):
     valid_until: Optional[date] = None
     passed: bool = True
     notes: Optional[str] = None
+
+
+class CarValuationCreate(BaseModel):
+    car_id: int
+    date: date
+    value: float
+    notes: Optional[str] = None

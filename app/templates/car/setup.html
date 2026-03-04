@@ -1,13 +1,13 @@
 {% extends "base.html" %}
-{% block title %}Car Setup — {{ app_title }}{% endblock %}
+{% block title %}{% if car %}Car Setup{% else %}Add Car{% endif %} — {{ app_title }}{% endblock %}
 {% block content %}
 <div class="mb-6">
-  <h1 class="text-xl font-bold text-white">Car Setup</h1>
-  <p class="text-slate-400 text-sm mt-0.5">Configure your vehicle details for accurate cost analysis.</p>
+  <h1 class="text-xl font-bold text-white">{% if car %}Car Setup{% else %}Add Car{% endif %}</h1>
+  <p class="text-slate-400 text-sm mt-0.5">{% if car %}Edit vehicle details.{% else %}Add a new vehicle to track.{% endif %}</p>
 </div>
-<div class="max-w-xl">
+<div class="max-w-xl space-y-6">
   <div class="card">
-    <form method="post" action="/car/setup" class="space-y-5">
+    <form method="post" action="{% if car %}/car/setup{% else %}/car/add{% endif %}" class="space-y-5">
       {% if car %}<input type="hidden" name="car_id" value="{{ car.id }}"/>{% endif %}
       <div><label class="form-label">Car nickname <span class="text-red-400">*</span></label>
         <input type="text" name="name" required placeholder="e.g. My BMW" value="{{ car.name if car else '' }}" class="form-input"/>
@@ -28,7 +28,7 @@
           <div><label class="form-label">Odometer at Purchase (km)</label><input type="number" name="purchase_mileage" min="0" step="0.1" placeholder="45000" value="{{ car.purchase_mileage if car else 0 }}" class="form-input"/></div>
           <div><label class="form-label">Current Market Value ({{ currency }})</label>
             <input type="number" name="current_market_value" min="0" step="0.01" placeholder="optional" value="{{ car.current_market_value if car and car.current_market_value else '' }}" class="form-input"/>
-            <p class="text-xs text-slate-600 mt-1">Used for real depreciation tracking.</p></div>
+            <p class="text-xs text-slate-600 mt-1">Single value — or use Value History below for real tracking.</p></div>
         </div>
       </div>
 
@@ -40,5 +40,74 @@
       </div>
     </form>
   </div>
+
+  {% if car %}
+  <!-- Value History -->
+  <div class="card">
+    <h2 class="text-sm font-semibold text-white mb-1">Value History</h2>
+    <p class="text-slate-400 text-sm mb-4">Record the car's market value at specific dates. When entries exist, Analytics will plot your real depreciation curve instead of the estimated one.</p>
+
+    {% if valuations %}
+    <div class="mb-5 overflow-hidden rounded-lg border border-slate-700/60">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-700/40">
+          <tr>
+            <th class="th">Date</th>
+            <th class="th">Value</th>
+            <th class="th">Notes</th>
+            <th class="th w-16"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-700/40">
+          {% for v in valuations %}
+          <tr>
+            <td class="td">{{ v.date.strftime('%d %b %Y') }}</td>
+            <td class="td font-medium text-white">{{ currency }}{{ "{:,.0f}".format(v.value) }}</td>
+            <td class="td text-slate-400">{{ v.notes or '—' }}</td>
+            <td class="td">
+              <form method="post" action="/car/valuation/{{ v.id }}/delete" onsubmit="return confirm('Delete this valuation?')">
+                <button type="submit" class="btn-danger">Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-sm text-slate-500 mb-4">No valuations recorded yet.</p>
+    {% endif %}
+
+    <form method="post" action="/car/valuation/add" class="grid grid-cols-3 gap-3 items-end">
+      <div>
+        <label class="form-label">Date</label>
+        <input type="date" name="date" required value="{{ today.isoformat() }}" class="form-input"/>
+      </div>
+      <div>
+        <label class="form-label">Value ({{ currency }})</label>
+        <input type="number" name="value" required min="0" step="0.01" placeholder="15000" class="form-input"/>
+      </div>
+      <div>
+        <label class="form-label">Notes</label>
+        <input type="text" name="notes" placeholder="e.g. Annual appraisal" class="form-input"/>
+      </div>
+      <div class="col-span-3">
+        <button type="submit" class="btn-secondary">Add Valuation</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Danger zone -->
+  {% if cars|length > 1 %}
+  <div class="card border-red-500/20">
+    <h2 class="text-sm font-semibold text-red-400 mb-1">Danger Zone</h2>
+    <p class="text-slate-400 text-sm mb-4">Permanently delete <strong class="text-white">{{ car.name }}</strong> and all its fuel, maintenance, and inspection records.</p>
+    <form method="post" action="/car/delete" onsubmit="return confirm('Delete {{ car.name }} and ALL its data? This cannot be undone.')">
+      <input type="hidden" name="car_id" value="{{ car.id }}"/>
+      <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 text-sm font-medium rounded-lg transition-colors">Delete this car</button>
+    </form>
+  </div>
+  {% endif %}
+  {% endif %}
 </div>
 {% endblock %}

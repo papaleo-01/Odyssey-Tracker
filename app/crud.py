@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from app import models
-from app.schemas import CarCreate, FuelEntryCreate, MaintenanceEntryCreate, InspectionEntryCreate
+from app.schemas import CarCreate, FuelEntryCreate, MaintenanceEntryCreate, InspectionEntryCreate, CarValuationCreate
 
 
 # ── Car ──────────────────────────────────────────────────────────────────────
@@ -31,6 +31,15 @@ def update_car(db: Session, car_id: int, data: dict) -> models.Car | None:
     db.commit()
     db.refresh(car)
     return car
+
+
+def delete_car(db: Session, car_id: int) -> bool:
+    car = get_car(db, car_id)
+    if not car:
+        return False
+    db.delete(car)
+    db.commit()
+    return True
 
 
 # ── Fuel ─────────────────────────────────────────────────────────────────────
@@ -158,5 +167,28 @@ def delete_inspection_entry(db: Session, entry_id: int) -> bool:
     if not entry:
         return False
     db.delete(entry)
+    db.commit()
+    return True
+
+
+# ── Car Valuations ────────────────────────────────────────────────────────────
+
+def get_valuation(db: Session, val_id: int) -> models.CarValuation | None:
+    return db.query(models.CarValuation).filter(models.CarValuation.id == val_id).first()
+
+
+def create_valuation(db: Session, data: CarValuationCreate) -> models.CarValuation:
+    val = models.CarValuation(**data.model_dump())
+    db.add(val)
+    db.commit()
+    db.refresh(val)
+    return val
+
+
+def delete_valuation(db: Session, val_id: int) -> bool:
+    val = get_valuation(db, val_id)
+    if not val:
+        return False
+    db.delete(val)
     db.commit()
     return True

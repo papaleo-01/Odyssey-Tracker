@@ -21,6 +21,7 @@ class Car(Base):
     fuel_entries = relationship("FuelEntry", back_populates="car", cascade="all, delete-orphan", order_by="FuelEntry.date.desc()")
     maintenance_entries = relationship("MaintenanceEntry", back_populates="car", cascade="all, delete-orphan", order_by="MaintenanceEntry.date.desc()")
     inspection_entries = relationship("InspectionEntry", back_populates="car", cascade="all, delete-orphan", order_by="InspectionEntry.date.desc()")
+    valuations = relationship("CarValuation", back_populates="car", cascade="all, delete-orphan", order_by="CarValuation.date")
 
 
 class FuelEntry(Base):
@@ -74,3 +75,15 @@ class InspectionEntry(Base):
     notes = Column(Text)
 
     car = relationship("Car", back_populates="inspection_entries")
+
+
+class CarValuation(Base):
+    __tablename__ = "car_valuations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    car_id = Column(Integer, ForeignKey("cars.id"), nullable=False)
+    date = Column(Date, nullable=False)
+    value = Column(Float, nullable=False)          # EUR market value at this date
+    notes = Column(Text)
+
+    car = relationship("Car", back_populates="valuations")

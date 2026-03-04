@@ -192,22 +192,34 @@ def compute_depreciation(car: "Car") -> dict | None:
     today = date.today()
     years_owned = (today - car.purchase_date).days / 365.25
 
-    # Simple declining-balance depreciation: 15% per year
-    ANNUAL_DEPRECIATION_RATE = 0.15
-    estimated_value = car.purchase_price * ((1 - ANNUAL_DEPRECIATION_RATE) ** years_owned)
-    total_depreciation = car.purchase_price - estimated_value
-    depreciation_per_year = total_depreciation / years_owned if years_owned > 0 else 0
+    valuations = sorted(car.valuations, key=lambda v: v.date) if car.valuations else []
 
-    summary = compute_summary(car)
-    total_km = summary["total_km"]
-    depreciation_per_km = _safe_div(total_depreciation, total_km)
+    if valuations:
+        # Use real recorded market values
+        latest = valuations[-1]
+        estimated_value = latest.value
+        total_depreciation = car.purchase_price - estimated_value
+        depreciation_per_year = total_depreciation / years_owned if years_owned > 0 else 0
 
-    # Build a year-by-year curve for the chart
-    curve = []
-    for y in range(int(years_owned) + 2):
-        val = car.purchase_price * ((1 - ANNUAL_DEPRECIATION_RATE) ** y)
-        year_label = car.purchase_date.year + y
-        curve.append({"year": year_label, "value": round(val, 2)})
+        curve = [{"year": car.purchase_date.year, "value": car.purchase_price, "label": str(car.purchase_date.year)}]
+        for v in valuations:
+            curve.append({"year": v.date.year, "value": round(v.value, 2), "label": v.date.strftime("%b %Y")})
+        using_real_data = True
+    else:
+        # Fallback: 15% annual declining-balance estimate
+        ANNUAL_DEPRECIATION_RATE = 0.15
+        estimated_value = car.purchase_price * ((1 - ANNUAL_DEPRECIATION_RATE) ** years_owned)
+        total_depreciation = car.purchase_price - estimated_value
+        depreciation_per_year = total_depreciation / years_owned if years_owned > 0 else 0
+
+        curve = []
+        for y in range(int(years_owned) + 2):
+            val = car.purchase_price * ((1 - ANNUAL_DEPRECIATION_RATE) ** y)
+            year_label = car.purchase_date.year + y
+            curve.append({"year": year_label, "value": round(val, 2), "label": str(year_label)})
+        using_real_data = False
+
+    depreciation_per_km = _safe_div(total_depreciation, compute_summary(car)["total_km"])
 
     return {
         "purchase_price": car.purchase_price,
@@ -218,6 +230,7 @@ def compute_depreciation(car: "Car") -> dict | None:
         "depreciation_per_year": round(depreciation_per_year, 2),
         "depreciation_per_km": round(depreciation_per_km, 4) if depreciation_per_km else None,
         "current_market_value": car.current_market_value,
+        "using_real_data": using_real_data,
         "curve": curve,
     }
 
