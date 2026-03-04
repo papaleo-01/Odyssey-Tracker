@@ -11,4 +11,5 @@ PORT = int(os.getenv("PORT", "8000"))
 HOST = os.getenv("HOST", "0.0.0.0")
 CURRENCY = os.getenv("CURRENCY", "€")
 APP_TITLE = os.getenv("APP_TITLE", "Car Cost Tracker")
-DATABASE_URL = f"sqlite:///{BASE_DIR}/data/car_tracker.db"
+DB_PATH = BASE_DIR / "data" / "car_tracker.db"
+DATABASE_URL = f"sqlite:///{DB_PATH}"
