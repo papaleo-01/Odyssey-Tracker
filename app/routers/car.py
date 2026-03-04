@@ -1,8 +1,6 @@
 from fastapi import APIRouter, Request, Form, Depends
 from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from pathlib import Path
 from datetime import date
 from typing import Optional
 
@@ -12,9 +10,9 @@ from app.database import get_db
 from app.schemas import CarCreate, CarValuationCreate
 from app.config import CURRENCY, APP_TITLE
 from app.utils import get_selected_car
+from app.templates_config import templates
 
 router = APIRouter(prefix="/car")
-templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
 
 
 def _ctx(request: Request, cars=None, **kwargs):
@@ -62,7 +60,7 @@ async def car_setup_submit(
     year: Optional[int] = Form(None),
     purchase_date: Optional[date] = Form(None),
     purchase_price: Optional[float] = Form(None),
-    purchase_mileage: float = Form(0),
+    purchase_mileage: Optional[float] = Form(None),
     current_market_value: Optional[float] = Form(None),
     notes: str = Form(""),
     db: Session = Depends(get_db),
@@ -76,7 +74,7 @@ async def car_setup_submit(
         "year": year,
         "purchase_date": purchase_date,
         "purchase_price": purchase_price,
-        "purchase_mileage": purchase_mileage,
+        "purchase_mileage": purchase_mileage if purchase_mileage is not None else 0,
         "current_market_value": current_market_value or None,
         "notes": notes or None,
     })
@@ -119,7 +117,7 @@ async def car_add_submit(
     year: Optional[int] = Form(None),
     purchase_date: Optional[date] = Form(None),
     purchase_price: Optional[float] = Form(None),
-    purchase_mileage: float = Form(0),
+    purchase_mileage: Optional[float] = Form(None),
     current_market_value: Optional[float] = Form(None),
     notes: str = Form(""),
     db: Session = Depends(get_db),
@@ -133,7 +131,7 @@ async def car_add_submit(
         year=year,
         purchase_date=purchase_date,
         purchase_price=purchase_price,
-        purchase_mileage=purchase_mileage,
+        purchase_mileage=purchase_mileage if purchase_mileage is not None else 0,
         current_market_value=current_market_value or None,
         notes=notes or None,
     ))

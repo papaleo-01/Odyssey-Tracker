@@ -113,10 +113,11 @@
 <div class="card text-center py-20">
   <div class="text-4xl mb-3">📋</div>
   <h2 class="text-lg font-semibold text-white mb-1">No entries yet</h2>
-  <p class="text-slate-500 text-sm mb-5">Start by adding your first entry or importing existing data.</p>
+  <p class="text-slate-500 text-sm mb-5">Start by adding your first entry.</p>
   <div class="flex gap-3 justify-center">
     <a href="/fuel/add" class="btn-primary">+ Add Fuel</a>
-    <a href="/import" class="btn-secondary">Import Data</a>
+    <a href="/maintenance/add" class="btn-secondary">+ Service</a>
+    <a href="/inspection/add" class="btn-secondary">+ Inspection</a>
   </div>
 </div>
 {% endif %}
@@ -127,6 +128,10 @@
 <script>
   const currency = '{{ currency }}';
   let activeType = 'all', activeYear = 'all';
+
+  function fmtNum(n, dec = 0) {
+    return n.toFixed(dec).replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f');
+  }
 
   // Initialize from URL query params
   const params = new URLSearchParams(window.location.search);
@@ -160,9 +165,9 @@
       }
     });
 
-    document.getElementById('statTotal').textContent = currency + totalCost.toFixed(2);
-    document.getElementById('statFuel').textContent  = currency + fuelCost.toFixed(2);
-    document.getElementById('statMaint').textContent = currency + maintCost.toFixed(2);
+    document.getElementById('statTotal').textContent = currency + fmtNum(totalCost, 2);
+    document.getElementById('statFuel').textContent  = currency + fmtNum(fuelCost, 2);
+    document.getElementById('statMaint').textContent = currency + fmtNum(maintCost, 2);
     document.getElementById('statRows').textContent  = visible + ' entries';
 
     const empty = document.getElementById('emptyState');
