@@ -58,7 +58,7 @@ async def fuel_add_submit(
     date_field: date = Form(..., alias="date"),
     liters: float = Form(...),
     total_cost: float = Form(...),
-    odometer: Optional[float] = Form(None),
+    odometer: Optional[str] = Form(None),
     full_tank: bool = Form(True),
     fuel_type: str = Form("Diesel"),
     station: str = Form(""),
@@ -73,7 +73,7 @@ async def fuel_add_submit(
         date=date_field,
         liters=liters,
         total_cost=total_cost,
-        odometer=odometer,
+        odometer=float(odometer) if odometer else None,
         full_tank=full_tank,
         fuel_type=fuel_type,
         station=station or None,
@@ -100,7 +100,7 @@ async def fuel_edit_submit(
     date_field: date = Form(..., alias="date"),
     liters: float = Form(...),
     total_cost: float = Form(...),
-    odometer: Optional[float] = Form(None),
+    odometer: Optional[str] = Form(None),
     full_tank: bool = Form(True),
     fuel_type: str = Form("Diesel"),
     station: str = Form(""),
@@ -111,8 +111,8 @@ async def fuel_edit_submit(
         return r
     crud.update_fuel_entry(db, entry_id, {
         "date": date_field, "liters": liters, "total_cost": total_cost,
-        "odometer": odometer, "full_tank": full_tank, "fuel_type": fuel_type,
-        "station": station or None, "notes": notes or None,
+        "odometer": float(odometer) if odometer else None, "full_tank": full_tank,
+        "fuel_type": fuel_type, "station": station or None, "notes": notes or None,
     })
     return RedirectResponse("/log", status_code=302)
 

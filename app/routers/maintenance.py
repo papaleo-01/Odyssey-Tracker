@@ -63,7 +63,7 @@ async def maintenance_add_submit(
     description: str = Form(...),
     category: str = Form("General"),
     cost: float = Form(...),
-    odometer: Optional[float] = Form(None),
+    odometer: Optional[str] = Form(None),
     shop: str = Form(""),
     notes: str = Form(""),
     db: Session = Depends(get_db),
@@ -71,13 +71,14 @@ async def maintenance_add_submit(
     if r := _guard(request):
         return r
     car, _ = get_selected_car(request, db)
+    _odometer = float(odometer) if odometer else None
     crud.create_maintenance_entry(db, MaintenanceEntryCreate(
         car_id=car.id,
         date=date_field,
         description=description,
         category=category,
         cost=cost,
-        odometer=odometer,
+        odometer=_odometer,
         shop=shop or None,
         notes=notes or None,
     ))
@@ -103,16 +104,17 @@ async def maintenance_edit_submit(
     description: str = Form(...),
     category: str = Form("General"),
     cost: float = Form(...),
-    odometer: Optional[float] = Form(None),
+    odometer: Optional[str] = Form(None),
     shop: str = Form(""),
     notes: str = Form(""),
     db: Session = Depends(get_db),
 ):
     if r := _guard(request):
         return r
+    _odometer = float(odometer) if odometer else None
     crud.update_maintenance_entry(db, entry_id, {
         "date": date_field, "description": description, "category": category,
-        "cost": cost, "odometer": odometer, "shop": shop or None, "notes": notes or None,
+        "cost": cost, "odometer": _odometer, "shop": shop or None, "notes": notes or None,
     })
     return RedirectResponse("/log", status_code=302)
 
