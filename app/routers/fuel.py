@@ -58,7 +58,7 @@ async def fuel_add_submit(
     date_field: date = Form(..., alias="date"),
     liters: float = Form(...),
     total_cost: float = Form(...),
-    odometer: float = Form(...),
+    odometer: Optional[float] = Form(None),
     full_tank: bool = Form(True),
     fuel_type: str = Form("Diesel"),
     station: str = Form(""),
@@ -100,7 +100,7 @@ async def fuel_edit_submit(
     date_field: date = Form(..., alias="date"),
     liters: float = Form(...),
     total_cost: float = Form(...),
-    odometer: float = Form(...),
+    odometer: Optional[float] = Form(None),
     full_tank: bool = Form(True),
     fuel_type: str = Form("Diesel"),
     station: str = Form(""),
@@ -114,7 +114,7 @@ async def fuel_edit_submit(
         "odometer": odometer, "full_tank": full_tank, "fuel_type": fuel_type,
         "station": station or None, "notes": notes or None,
     })
-    return RedirectResponse("/fuel", status_code=302)
+    return RedirectResponse("/log", status_code=302)
 
 
 @router.post("/{entry_id}/delete")

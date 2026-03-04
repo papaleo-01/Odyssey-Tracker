@@ -20,13 +20,13 @@ class FuelEntryCreate(BaseModel):
     date: date
     liters: float
     total_cost: float
-    odometer: float
+    odometer: Optional[float] = None
     full_tank: bool = True
     fuel_type: str = "Diesel"
     station: Optional[str] = None
     notes: Optional[str] = None
 
-    @field_validator("liters", "total_cost", "odometer")
+    @field_validator("liters", "total_cost")
     @classmethod
     def must_be_positive(cls, v: float) -> float:
         if v <= 0:

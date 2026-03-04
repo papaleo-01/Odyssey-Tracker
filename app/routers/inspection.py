@@ -99,7 +99,7 @@ async def inspection_edit_submit(
         "date": date_field, "cost": cost, "valid_until": valid_until,
         "passed": passed, "notes": notes or None,
     })
-    return RedirectResponse("/inspection", status_code=302)
+    return RedirectResponse("/log", status_code=302)
 
 
 @router.post("/{entry_id}/delete")
