@@ -5,11 +5,11 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from pathlib import Path
 
-import app.crud as crud
 import app.auth as auth_module
 import app.analytics as analytics
 from app.database import get_db
 from app.config import CURRENCY, APP_TITLE
+from app.utils import get_selected_car
 
 router = APIRouter(prefix="/analytics")
 templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
@@ -20,11 +20,10 @@ async def analytics_page(request: Request, db: Session = Depends(get_db)):
     if not auth_module.is_authenticated(request):
         return RedirectResponse("/login", status_code=302)
 
-    cars = crud.get_cars(db)
-    if not cars:
-        return RedirectResponse("/car/setup", status_code=302)
+    car, cars = get_selected_car(request, db)
+    if not car:
+        return RedirectResponse("/car/add", status_code=302)
 
-    car = cars[0]
     summary = analytics.compute_summary(car)
     monthly = analytics.compute_monthly_costs(car)
     yearly = analytics.compute_yearly_costs(car)
@@ -32,7 +31,6 @@ async def analytics_page(request: Request, db: Session = Depends(get_db)):
     depreciation = analytics.compute_depreciation(car)
     fuel_stats = analytics.compute_fuel_stats(car.fuel_entries)
 
-    # Consumption over time (only entries with valid consumption)
     consumption_history = [
         {"date": s["entry"].date.isoformat(), "consumption": s["consumption_l100"]}
         for s in reversed(fuel_stats)
@@ -42,6 +40,7 @@ async def analytics_page(request: Request, db: Session = Depends(get_db)):
     return templates.TemplateResponse("analytics.html", {
         "request": request,
         "car": car,
+        "cars": cars,
         "summary": summary,
         "monthly": monthly,
         "yearly": yearly,

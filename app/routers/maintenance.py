@@ -11,6 +11,7 @@ import app.auth as auth_module
 from app.database import get_db
 from app.schemas import MaintenanceEntryCreate
 from app.config import CURRENCY, APP_TITLE
+from app.utils import get_selected_car
 
 router = APIRouter(prefix="/maintenance")
 templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
@@ -22,8 +23,8 @@ CATEGORIES = [
 ]
 
 
-def _ctx(request: Request, **kwargs):
-    return {"request": request, "currency": CURRENCY, "app_title": APP_TITLE, "categories": CATEGORIES, **kwargs}
+def _ctx(request: Request, cars=None, **kwargs):
+    return {"request": request, "currency": CURRENCY, "app_title": APP_TITLE, "categories": CATEGORIES, "cars": cars or [], **kwargs}
 
 
 def _guard(request: Request):
@@ -36,25 +37,23 @@ def _guard(request: Request):
 async def maintenance_list(request: Request, db: Session = Depends(get_db)):
     if r := _guard(request):
         return r
-    cars = crud.get_cars(db)
-    if not cars:
-        return RedirectResponse("/car/setup", status_code=302)
-    car = cars[0]
+    car, cars = get_selected_car(request, db)
+    if not car:
+        return RedirectResponse("/car/add", status_code=302)
     entries = crud.get_maintenance_entries(db, car.id)
-    return templates.TemplateResponse("maintenance/list.html", _ctx(request, car=car, entries=entries))
+    return templates.TemplateResponse("maintenance/list.html", _ctx(request, cars=cars, car=car, entries=entries))
 
 
 @router.get("/add")
 async def maintenance_add_form(request: Request, db: Session = Depends(get_db)):
     if r := _guard(request):
         return r
-    cars = crud.get_cars(db)
-    if not cars:
-        return RedirectResponse("/car/setup", status_code=302)
-    car = cars[0]
+    car, cars = get_selected_car(request, db)
+    if not car:
+        return RedirectResponse("/car/add", status_code=302)
     fuel_entries = crud.get_fuel_entries(db, car.id)
     last_odometer = fuel_entries[0].odometer if fuel_entries else (car.purchase_mileage or 0)
-    return templates.TemplateResponse("maintenance/add.html", _ctx(request, car=car, today=date.today(), last_odometer=last_odometer, entry=None))
+    return templates.TemplateResponse("maintenance/add.html", _ctx(request, cars=cars, car=car, today=date.today(), last_odometer=last_odometer, entry=None))
 
 
 @router.post("/add")
@@ -71,8 +70,7 @@ async def maintenance_add_submit(
 ):
     if r := _guard(request):
         return r
-    cars = crud.get_cars(db)
-    car = cars[0]
+    car, _ = get_selected_car(request, db)
     crud.create_maintenance_entry(db, MaintenanceEntryCreate(
         car_id=car.id,
         date=date_field,
@@ -93,8 +91,8 @@ async def maintenance_edit_form(entry_id: int, request: Request, db: Session = D
     entry = crud.get_maintenance_entry(db, entry_id)
     if not entry:
         return RedirectResponse("/maintenance", status_code=302)
-    cars = crud.get_cars(db)
-    return templates.TemplateResponse("maintenance/add.html", _ctx(request, car=cars[0], today=date.today(), entry=entry, last_odometer=entry.odometer or 0))
+    car, cars = get_selected_car(request, db)
+    return templates.TemplateResponse("maintenance/add.html", _ctx(request, cars=cars, car=car, today=date.today(), entry=entry, last_odometer=entry.odometer or 0))
 
 
 @router.post("/{entry_id}/edit")

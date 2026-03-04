@@ -11,13 +11,14 @@ import app.auth as auth_module
 from app.database import get_db
 from app.schemas import InspectionEntryCreate
 from app.config import CURRENCY, APP_TITLE
+from app.utils import get_selected_car
 
 router = APIRouter(prefix="/inspection")
 templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
 
 
-def _ctx(request: Request, **kwargs):
-    return {"request": request, "currency": CURRENCY, "app_title": APP_TITLE, **kwargs}
+def _ctx(request: Request, cars=None, **kwargs):
+    return {"request": request, "currency": CURRENCY, "app_title": APP_TITLE, "cars": cars or [], **kwargs}
 
 
 def _guard(request: Request):
@@ -30,23 +31,22 @@ def _guard(request: Request):
 async def inspection_list(request: Request, db: Session = Depends(get_db)):
     if r := _guard(request):
         return r
-    cars = crud.get_cars(db)
-    if not cars:
-        return RedirectResponse("/car/setup", status_code=302)
-    car = cars[0]
+    car, cars = get_selected_car(request, db)
+    if not car:
+        return RedirectResponse("/car/add", status_code=302)
     entries = crud.get_inspection_entries(db, car.id)
     today = date.today()
-    return templates.TemplateResponse("inspection/list.html", _ctx(request, car=car, entries=entries, today=today))
+    return templates.TemplateResponse("inspection/list.html", _ctx(request, cars=cars, car=car, entries=entries, today=today))
 
 
 @router.get("/add")
 async def inspection_add_form(request: Request, db: Session = Depends(get_db)):
     if r := _guard(request):
         return r
-    cars = crud.get_cars(db)
-    if not cars:
-        return RedirectResponse("/car/setup", status_code=302)
-    return templates.TemplateResponse("inspection/add.html", _ctx(request, car=cars[0], today=date.today(), entry=None))
+    car, cars = get_selected_car(request, db)
+    if not car:
+        return RedirectResponse("/car/add", status_code=302)
+    return templates.TemplateResponse("inspection/add.html", _ctx(request, cars=cars, car=car, today=date.today(), entry=None))
 
 
 @router.post("/add")
@@ -61,8 +61,7 @@ async def inspection_add_submit(
 ):
     if r := _guard(request):
         return r
-    cars = crud.get_cars(db)
-    car = cars[0]
+    car, _ = get_selected_car(request, db)
     crud.create_inspection_entry(db, InspectionEntryCreate(
         car_id=car.id,
         date=date_field,
@@ -81,8 +80,8 @@ async def inspection_edit_form(entry_id: int, request: Request, db: Session = De
     entry = crud.get_inspection_entry(db, entry_id)
     if not entry:
         return RedirectResponse("/inspection", status_code=302)
-    cars = crud.get_cars(db)
-    return templates.TemplateResponse("inspection/add.html", _ctx(request, car=cars[0], today=date.today(), entry=entry))
+    car, cars = get_selected_car(request, db)
+    return templates.TemplateResponse("inspection/add.html", _ctx(request, cars=cars, car=car, today=date.today(), entry=entry))
 
 
 @router.post("/{entry_id}/edit")

@@ -12,6 +12,7 @@ import app.analytics as analytics
 from app.database import get_db
 from app.schemas import FuelEntryCreate
 from app.config import CURRENCY, APP_TITLE
+from app.utils import get_selected_car
 
 router = APIRouter(prefix="/fuel")
 templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
@@ -19,8 +20,8 @@ templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templa
 FUEL_TYPES = ["Diesel", "Petrol", "E10", "E5", "LPG", "CNG", "Electric"]
 
 
-def _ctx(request: Request, **kwargs):
-    return {"request": request, "currency": CURRENCY, "app_title": APP_TITLE, "fuel_types": FUEL_TYPES, **kwargs}
+def _ctx(request: Request, cars=None, **kwargs):
+    return {"request": request, "currency": CURRENCY, "app_title": APP_TITLE, "fuel_types": FUEL_TYPES, "cars": cars or [], **kwargs}
 
 
 def _guard(request: Request):
@@ -33,27 +34,24 @@ def _guard(request: Request):
 async def fuel_list(request: Request, db: Session = Depends(get_db)):
     if r := _guard(request):
         return r
-    cars = crud.get_cars(db)
-    if not cars:
-        return RedirectResponse("/car/setup", status_code=302)
-    car = cars[0]
+    car, cars = get_selected_car(request, db)
+    if not car:
+        return RedirectResponse("/car/add", status_code=302)
     entries = crud.get_fuel_entries(db, car.id)
     stats = analytics.compute_fuel_stats(entries)
-    return templates.TemplateResponse("fuel/list.html", _ctx(request, car=car, stats=stats))
+    return templates.TemplateResponse("fuel/list.html", _ctx(request, cars=cars, car=car, stats=stats))
 
 
 @router.get("/add")
 async def fuel_add_form(request: Request, db: Session = Depends(get_db)):
     if r := _guard(request):
         return r
-    cars = crud.get_cars(db)
-    if not cars:
-        return RedirectResponse("/car/setup", status_code=302)
-    car = cars[0]
-    # Pre-fill odometer with latest reading
+    car, cars = get_selected_car(request, db)
+    if not car:
+        return RedirectResponse("/car/add", status_code=302)
     entries = crud.get_fuel_entries(db, car.id)
     last_odometer = entries[0].odometer if entries else (car.purchase_mileage or 0)
-    return templates.TemplateResponse("fuel/add.html", _ctx(request, car=car, today=date.today(), last_odometer=last_odometer, entry=None))
+    return templates.TemplateResponse("fuel/add.html", _ctx(request, cars=cars, car=car, today=date.today(), last_odometer=last_odometer, entry=None))
 
 
 @router.post("/add")
@@ -71,8 +69,7 @@ async def fuel_add_submit(
 ):
     if r := _guard(request):
         return r
-    cars = crud.get_cars(db)
-    car = cars[0]
+    car, _ = get_selected_car(request, db)
     crud.create_fuel_entry(db, FuelEntryCreate(
         car_id=car.id,
         date=date_field,
@@ -94,8 +91,8 @@ async def fuel_edit_form(entry_id: int, request: Request, db: Session = Depends(
     entry = crud.get_fuel_entry(db, entry_id)
     if not entry:
         return RedirectResponse("/fuel", status_code=302)
-    cars = crud.get_cars(db)
-    return templates.TemplateResponse("fuel/add.html", _ctx(request, car=cars[0], today=date.today(), entry=entry, last_odometer=entry.odometer))
+    car, cars = get_selected_car(request, db)
+    return templates.TemplateResponse("fuel/add.html", _ctx(request, cars=cars, car=car, today=date.today(), entry=entry, last_odometer=entry.odometer))
 
 
 @router.post("/{entry_id}/edit")
