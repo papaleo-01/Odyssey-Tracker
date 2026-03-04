@@ -9,7 +9,7 @@ from app.database import init_db
 from app.routers import auth, dashboard, car, fuel, maintenance, inspection
 from app.routers.analytics_router import router as analytics_router
 from app.routers.log_router import router as log_router
-from app.routers.import_router import router as import_router
+from app.routers.settings_router import router as settings_router
 
 app = FastAPI(title=APP_TITLE, docs_url=None, redoc_url=None)
 
@@ -28,7 +28,7 @@ app.include_router(maintenance.router)
 app.include_router(inspection.router)
 app.include_router(analytics_router)
 app.include_router(log_router)
-app.include_router(import_router)
+app.include_router(settings_router)
 
 
 @app.on_event("startup")
