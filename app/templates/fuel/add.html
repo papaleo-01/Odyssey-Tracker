@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{% if entry %}Edit{% else %}Add{% endif %} Fuel — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="mb-6">
+  <a href="/log?type=fuel" class="text-sm text-blue-400 hover:text-blue-300">← Back to Log</a>
+  <h1 class="text-xl font-bold text-white mt-2">{% if entry %}Edit Fill-up{% else %}Add Fill-up{% endif %}</h1>
+</div>
+<div class="max-w-lg">
+  <div class="card">
+    <form method="post" action="{% if entry %}/fuel/{{ entry.id }}/edit{% else %}/fuel/add{% endif %}" class="space-y-5">
+      <div class="grid grid-cols-2 gap-4">
+        <div><label class="form-label">Date <span class="text-red-400">*</span></label>
+          <input type="date" name="date" required value="{{ entry.date.isoformat() if entry else today.isoformat() }}" class="form-input"/></div>
+        <div><label class="form-label">Fuel Type</label>
+          <select name="fuel_type" class="form-select">
+            {% for ft in fuel_types %}<option value="{{ ft }}" {% if entry and entry.fuel_type == ft %}selected{% elif not entry and ft == 'Diesel' %}selected{% endif %}>{{ ft }}</option>{% endfor %}
+          </select></div>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div><label class="form-label">Liters filled <span class="text-red-400">*</span></label>
+          <div class="relative"><input type="number" name="liters" id="litersInput" required min="0.1" step="0.01" placeholder="45.00" value="{{ entry.liters if entry else '' }}" class="form-input pr-8"/><span class="absolute right-3 top-2.5 text-slate-400 text-xs">L</span></div></div>
+        <div><label class="form-label">Total cost <span class="text-red-400">*</span></label>
+          <div class="relative"><span class="absolute left-3 top-2.5 text-slate-400 text-xs">{{ currency }}</span><input type="number" name="total_cost" id="costInput" required min="0.01" step="0.01" placeholder="67.50" value="{{ entry.total_cost if entry else '' }}" class="form-input pl-6"/></div></div>
+      </div>
+      <div id="pricePreview" class="text-xs text-slate-400 -mt-3 hidden">
+        Price per liter: <span id="pricePerLiter" class="font-semibold text-slate-200"></span>
+      </div>
+      <div><label class="form-label">Odometer reading (km) <span class="text-red-400">*</span></label>
+        <div class="relative"><input type="number" name="odometer" required min="0" step="0.1" placeholder="{{ last_odometer }}" value="{{ entry.odometer if entry else '' }}" class="form-input pr-10"/><span class="absolute right-3 top-2.5 text-slate-400 text-xs">km</span></div>
+        <p class="text-xs text-slate-600 mt-1">Current odometer reading at fill-up.</p></div>
+      <div><label class="form-label">Gas station</label>
+        <input type="text" name="station" placeholder="Shell, BP, Total…" value="{{ entry.station if entry and entry.station else '' }}" class="form-input"/></div>
+      <div class="flex items-center gap-3">
+        <input type="checkbox" id="full_tank" name="full_tank" value="true" {% if not entry or entry.full_tank %}checked{% endif %} class="w-4 h-4 rounded border-slate-600 bg-slate-700 text-blue-600"/>
+        <label for="full_tank" class="text-sm text-slate-300">Full tank <span class="text-slate-500">(uncheck for partial top-up)</span></label>
+      </div>
+      <div><label class="form-label">Notes</label>
+        <input type="text" name="notes" placeholder="Optional…" value="{{ entry.notes if entry and entry.notes else '' }}" class="form-input"/></div>
+      <div class="flex gap-3 pt-1">
+        <button type="submit" class="btn-primary">{% if entry %}Save Changes{% else %}Add Fill-up{% endif %}</button>
+        <a href="/log?type=fuel" class="btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  const li = document.getElementById('litersInput'), co = document.getElementById('costInput');
+  const pr = document.getElementById('pricePreview'), sp = document.getElementById('pricePerLiter');
+  function upd() {
+    const l = parseFloat(li.value), c = parseFloat(co.value);
+    if(l>0 && c>0){ sp.textContent = '{{ currency }}'+(c/l).toFixed(3)+'/L'; pr.classList.remove('hidden'); }
+    else pr.classList.add('hidden');
+  }
+  li.addEventListener('input', upd); co.addEventListener('input', upd); upd();
+</script>
+{% endblock %}

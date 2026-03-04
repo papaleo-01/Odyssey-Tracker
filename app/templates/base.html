@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}{{ app_title }}{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style type="text/tailwindcss">
+    .card        { @apply bg-slate-800 border border-slate-700/60 rounded-xl p-5; }
+    .stat-card   { @apply bg-slate-800 border border-slate-700/60 rounded-xl p-5 flex flex-col gap-1; }
+    .form-label  { @apply block text-sm font-medium text-slate-300 mb-1.5; }
+    .form-input  { @apply w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent; }
+    .form-select { @apply w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500; }
+    .btn-primary   { @apply inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors; }
+    .btn-secondary { @apply inline-flex items-center gap-1.5 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm font-medium rounded-lg transition-colors; }
+    .btn-danger    { @apply inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-medium rounded-lg transition-colors; }
+    .badge         { @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium; }
+    .nav-link      { @apply flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-700/60 hover:text-slate-100 transition-colors; }
+    .nav-link.active { @apply bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 hover:text-blue-300; }
+    .nav-divider   { @apply border-t border-slate-700/60 my-2; }
+    .th            { @apply text-left px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider; }
+    .td            { @apply px-4 py-3 text-sm text-slate-300; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex">
+
+  <!-- Sidebar -->
+  <aside class="w-52 shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col min-h-screen fixed top-0 left-0 z-20">
+    <div class="px-4 py-5 border-b border-slate-800">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-blue-600/20 flex items-center justify-center text-lg">🚗</div>
+        <div>
+          <div class="text-white font-semibold text-sm leading-tight">{{ app_title }}</div>
+          {% if car is defined and car %}
+          <div class="text-slate-500 text-xs truncate">{{ car.name }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <nav class="flex-1 px-3 py-3 space-y-0.5">
+      <a href="/" class="nav-link {% if request.url.path == '/' %}active{% endif %}">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        Dashboard
+      </a>
+      <a href="/log" class="nav-link {% if request.url.path == '/log' %}active{% endif %}">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        Log
+      </a>
+      <a href="/analytics" class="nav-link {% if '/analytics' in request.url.path %}active{% endif %}">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        Analytics
+      </a>
+
+      <div class="nav-divider"></div>
+      <p class="px-3 pt-1 pb-0.5 text-xs font-semibold text-slate-600 uppercase tracking-wider">Add Entry</p>
+
+      <a href="/fuel/add" class="nav-link {% if request.url.path == '/fuel/add' %}active{% endif %}">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        + Fuel
+      </a>
+      <a href="/maintenance/add" class="nav-link {% if request.url.path == '/maintenance/add' %}active{% endif %}">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+        + Service
+      </a>
+      <a href="/inspection/add" class="nav-link {% if request.url.path == '/inspection/add' %}active{% endif %}">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        + Inspection
+      </a>
+
+      <div class="nav-divider"></div>
+
+      <a href="/import" class="nav-link {% if '/import' in request.url.path %}active{% endif %}">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+        Import Data
+      </a>
+    </nav>
+
+    <div class="px-3 py-3 border-t border-slate-800 space-y-0.5">
+      <a href="/car/setup" class="nav-link {% if '/car/setup' in request.url.path %}active{% endif %}">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+        Car Setup
+      </a>
+      <a href="/logout" class="nav-link hover:text-red-400 hover:bg-red-500/10">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        Logout
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="flex-1 ml-52 min-h-screen">
+    <!-- Flash toast -->
+    {% if request.session %}
+    {% set _flash = request.session.pop("flash", None) %}
+    {% if _flash %}
+    {% set _ftype = _flash.split(":", 1)[0] if ":" in _flash else "info" %}
+    {% set _fmsg  = _flash.split(":", 1)[1] if ":" in _flash else _flash %}
+    <div id="flash-toast" class="fixed top-4 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl border text-sm font-medium max-w-sm
+      {% if _ftype == 'success' %}bg-emerald-900/90 border-emerald-700 text-emerald-200
+      {% elif _ftype == 'error' %}bg-red-900/90 border-red-700 text-red-200
+      {% else %}bg-slate-800 border-slate-600 text-slate-200{% endif %}">
+      <span>{% if _ftype == 'success' %}✓{% elif _ftype == 'error' %}✕{% else %}ℹ{% endif %}</span>
+      <span>{{ _fmsg }}</span>
+      <button onclick="this.parentElement.remove()" class="ml-2 opacity-60 hover:opacity-100 text-base leading-none">✕</button>
+    </div>
+    <script>setTimeout(()=>{ const t=document.getElementById('flash-toast'); if(t)t.remove(); }, 5000);</script>
+    {% endif %}
+    {% endif %}
+
+    <div class="max-w-6xl mx-auto px-6 py-7">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script>
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.borderColor = 'rgba(148,163,184,0.08)';
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

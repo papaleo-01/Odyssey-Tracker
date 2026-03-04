@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{% if entry %}Edit{% else %}Add{% endif %} Inspection — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="mb-6">
+  <a href="/log?type=inspection" class="text-sm text-blue-400 hover:text-blue-300">← Back to Log</a>
+  <h1 class="text-xl font-bold text-white mt-2">{% if entry %}Edit Inspection{% else %}Add Inspection{% endif %}</h1>
+</div>
+<div class="max-w-lg">
+  <div class="card">
+    <form method="post" action="{% if entry %}/inspection/{{ entry.id }}/edit{% else %}/inspection/add{% endif %}" class="space-y-5">
+      <div class="grid grid-cols-2 gap-4">
+        <div><label class="form-label">Inspection Date <span class="text-red-400">*</span></label>
+          <input type="date" name="date" required value="{{ entry.date.isoformat() if entry else today.isoformat() }}" class="form-input"/></div>
+        <div><label class="form-label">Cost <span class="text-red-400">*</span></label>
+          <div class="relative"><span class="absolute left-3 top-2.5 text-slate-400 text-xs">{{ currency }}</span><input type="number" name="cost" required min="0" step="0.01" placeholder="80.00" value="{{ entry.cost if entry else '' }}" class="form-input pl-6"/></div></div>
+      </div>
+      <div><label class="form-label">Valid Until (next inspection due)</label>
+        <input type="date" name="valid_until" value="{{ entry.valid_until.isoformat() if entry and entry.valid_until else '' }}" class="form-input"/>
+        <p class="text-xs text-slate-600 mt-1">Usually 1–2 years from inspection date.</p></div>
+      <div class="flex items-center gap-3">
+        <input type="checkbox" id="passed" name="passed" value="true" {% if not entry or entry.passed %}checked{% endif %} class="w-4 h-4 rounded border-slate-600 bg-slate-700 text-blue-600"/>
+        <label for="passed" class="text-sm text-slate-300">Inspection passed</label>
+      </div>
+      <div><label class="form-label">Notes</label>
+        <textarea name="notes" rows="3" placeholder="Inspector remarks, required repairs…" class="form-input">{{ entry.notes if entry and entry.notes else '' }}</textarea></div>
+      <div class="flex gap-3 pt-1">
+        <button type="submit" class="btn-primary">{% if entry %}Save Changes{% else %}Add Inspection{% endif %}</button>
+        <a href="/log?type=inspection" class="btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}Analytics — {{ app_title }}{% endblock %}
+{% block content %}
+<div class="mb-6">
+  <h1 class="text-xl font-bold text-white">Analytics</h1>
+  <p class="text-slate-400 text-sm mt-0.5">Full cost and efficiency breakdown.</p>
+</div>
+
+<!-- KPIs -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+  <div class="stat-card"><span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Total Cost</span><span class="text-2xl font-bold text-white">{{ currency }}{{ "%.0f"|format(summary.total_cost) }}</span><span class="text-xs text-slate-500">all time</span></div>
+  <div class="stat-card"><span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">KM Tracked</span><span class="text-2xl font-bold text-white">{{ "%.0f"|format(summary.total_km) }}</span><span class="text-xs text-slate-500">km driven</span></div>
+  <div class="stat-card"><span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">All-in Cost/km</span><span class="text-2xl font-bold text-white">{% if summary.cost_per_km %}{{ currency }}{{ "%.3f"|format(summary.cost_per_km) }}{% else %}<span class="text-slate-600">—</span>{% endif %}</span><span class="text-xs text-slate-500">fuel+maint+insp</span></div>
+  <div class="stat-card"><span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Fuel Cost/km</span><span class="text-2xl font-bold text-white">{% if summary.fuel_cost_per_km %}{{ currency }}{{ "%.3f"|format(summary.fuel_cost_per_km) }}{% else %}<span class="text-slate-600">—</span>{% endif %}</span><span class="text-xs text-slate-500">fuel only</span></div>
+</div>
+
+<!-- Charts row 1 -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+  <div class="card"><h2 class="text-sm font-semibold text-slate-300 mb-3">Monthly Cost Breakdown</h2>
+    {% if monthly %}<canvas id="monthlyChart" height="220"></canvas>
+    {% else %}<div class="text-slate-600 text-sm text-center py-12">No data yet.</div>{% endif %}</div>
+  <div class="card"><h2 class="text-sm font-semibold text-slate-300 mb-3">Fuel Price History ({{ currency }}/L)</h2>
+    {% if summary.fuel_entry_count > 0 %}<canvas id="fuelPriceChart" height="220"></canvas>
+    {% else %}<div class="text-slate-600 text-sm text-center py-12">No fuel data yet.</div>{% endif %}</div>
+</div>
+
+<!-- Charts row 2 -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+  <div class="card">
+    <h2 class="text-sm font-semibold text-slate-300 mb-1">Consumption History (L/100km)</h2>
+    <p class="text-xs text-slate-600 mb-3">Lower is better.</p>
+    {% if summary.fuel_entry_count > 1 %}<canvas id="consumptionChart" height="220"></canvas>
+    {% else %}<div class="text-slate-600 text-sm text-center py-12">Need at least 2 fuel entries.</div>{% endif %}</div>
+
+  <div class="card"><h2 class="text-sm font-semibold text-slate-300 mb-3">Yearly Summary</h2>
+    {% if yearly %}
+    <table class="w-full text-sm">
+      <thead><tr class="border-b border-slate-700/60"><th class="text-left py-2 text-xs text-slate-500 font-semibold">Year</th><th class="text-right py-2 text-xs text-slate-500 font-semibold">Fuel</th><th class="text-right py-2 text-xs text-slate-500 font-semibold">Maint.</th><th class="text-right py-2 text-xs text-slate-500 font-semibold">Insp.</th><th class="text-right py-2 text-xs text-slate-500 font-semibold">Total</th></tr></thead>
+      <tbody class="divide-y divide-slate-700/40">
+        {% for row in yearly|reverse %}
+        <tr class="hover:bg-slate-700/20">
+          <td class="py-2 font-medium text-slate-300">{{ row.year }}</td>
+          <td class="py-2 text-right text-blue-400">{{ currency }}{{ "%.0f"|format(row.fuel) }}</td>
+          <td class="py-2 text-right text-orange-400">{{ currency }}{{ "%.0f"|format(row.maintenance) }}</td>
+          <td class="py-2 text-right text-emerald-400">{{ currency }}{{ "%.0f"|format(row.inspection) }}</td>
+          <td class="py-2 text-right font-bold text-white">{{ currency }}{{ "%.0f"|format(row.total) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<div class="text-slate-600 text-sm text-center py-12">No data yet.</div>{% endif %}</div>
+</div>
+
+<!-- Depreciation -->
+{% if depreciation %}
+<div class="card mb-4">
+  <h2 class="text-sm font-semibold text-slate-300 mb-4">Depreciation Estimate</h2>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+    <div><span class="text-xs text-slate-500">Purchase Price</span><div class="text-lg font-bold text-white">{{ currency }}{{ "%.0f"|format(depreciation.purchase_price) }}</div></div>
+    <div><span class="text-xs text-slate-500">Est. Value Now</span><div class="text-lg font-bold text-white">{{ currency }}{{ "%.0f"|format(depreciation.estimated_value) }}</div>{% if depreciation.current_market_value %}<div class="text-xs text-emerald-400">Actual: {{ currency }}{{ "%.0f"|format(depreciation.current_market_value) }}</div>{% endif %}</div>
+    <div><span class="text-xs text-slate-500">Total Depreciation</span><div class="text-lg font-bold text-red-400">-{{ currency }}{{ "%.0f"|format(depreciation.total_depreciation) }}</div><div class="text-xs text-slate-500">over {{ depreciation.years_owned }} yrs</div></div>
+    <div><span class="text-xs text-slate-500">Depreciation / km</span><div class="text-lg font-bold text-white">{% if depreciation.depreciation_per_km %}{{ currency }}{{ "%.3f"|format(depreciation.depreciation_per_km) }}{% else %}—{% endif %}</div><div class="text-xs text-slate-500">{{ currency }}{{ "%.0f"|format(depreciation.depreciation_per_year) }}/year est.</div></div>
+  </div>
+  <canvas id="depreciationChart" height="160"></canvas>
+  <p class="text-xs text-slate-600 mt-2">15% annual declining-balance. Update "Current Market Value" in Car Setup for an actual figure.</p>
+</div>
+{% endif %}
+
+<!-- Stats table -->
+<div class="card">
+  <h2 class="text-sm font-semibold text-slate-300 mb-4">Full Summary</h2>
+  <div class="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-2 text-sm">
+    {% for label, val in [
+      ("Fuel cost", currency ~ "%.2f"|format(summary.total_fuel_cost)),
+      ("Maintenance cost", currency ~ "%.2f"|format(summary.total_maintenance_cost)),
+      ("Inspection cost", currency ~ "%.2f"|format(summary.total_inspection_cost)),
+      ("Total liters", "%.1f"|format(summary.total_fuel_liters) ~ " L"),
+      ("Avg price/liter", currency ~ "%.4f"|format(summary.avg_price_per_liter) if summary.avg_price_per_liter else "—"),
+      ("Avg consumption", "%.2f"|format(summary.avg_consumption_l100) ~ " L/100km" if summary.avg_consumption_l100 else "—"),
+      ("Total km tracked", "%.0f"|format(summary.total_km) ~ " km"),
+      ("All-in cost/km", currency ~ "%.4f"|format(summary.cost_per_km) if summary.cost_per_km else "—"),
+      ("Fuel cost/km", currency ~ "%.4f"|format(summary.fuel_cost_per_km) if summary.fuel_cost_per_km else "—"),
+      ("Fill-ups logged", summary.fuel_entry_count),
+      ("Service records", summary.maintenance_entry_count),
+      ("Current odometer", "%.0f"|format(summary.latest_odometer) ~ " km" if summary.latest_odometer else "—"),
+    ] %}
+    <div class="flex justify-between border-b border-slate-700/40 pb-1.5"><span class="text-slate-500">{{ label }}</span><span class="font-semibold text-slate-200">{{ val }}</span></div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const cur = '{{ currency }}';
+  {% if monthly %}
+  const monthly = {{ monthly_json | safe }};
+  new Chart(document.getElementById('monthlyChart'), {
+    type: 'bar',
+    data: { labels: monthly.map(m => m.label),
+      datasets: [
+        { label:'Fuel', data:monthly.map(m=>m.fuel), backgroundColor:'#3b82f6', borderRadius:3 },
+        { label:'Maintenance', data:monthly.map(m=>m.maintenance), backgroundColor:'#fb923c', borderRadius:3 },
+        { label:'Inspection', data:monthly.map(m=>m.inspection), backgroundColor:'#34d399', borderRadius:3 },
+      ]
+    },
+    options: { responsive:true, plugins:{ legend:{ position:'top', labels:{ boxWidth:8, font:{size:11} } } },
+      scales:{ x:{stacked:true,grid:{display:false},ticks:{font:{size:10},maxRotation:45}}, y:{stacked:true,ticks:{callback:v=>cur+v,font:{size:10}}} } }
+  });
+  {% endif %}
+  {% if summary.fuel_entry_count > 0 %}
+  const priceData = {{ fuel_price_history_json | safe }};
+  if(priceData.length) new Chart(document.getElementById('fuelPriceChart'), {
+    type:'line', data:{ labels:priceData.map(d=>d.date),
+      datasets:[{ label:cur+'/L', data:priceData.map(d=>d.price_per_liter), borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,0.08)', fill:true, tension:0.3, pointRadius:3 }]
+    },
+    options:{ responsive:true, plugins:{legend:{display:false}},
+      scales:{ x:{ticks:{font:{size:10},maxTicksLimit:10},grid:{display:false}}, y:{ticks:{callback:v=>cur+v.toFixed(3),font:{size:10}}} } }
+  });
+  {% endif %}
+  {% if summary.fuel_entry_count > 1 %}
+  const consumData = {{ consumption_history_json | safe }};
+  if(consumData.length) new Chart(document.getElementById('consumptionChart'), {
+    type:'line', data:{ labels:consumData.map(d=>d.date),
+      datasets:[{ label:'L/100km', data:consumData.map(d=>d.consumption), borderColor:'#fb923c', backgroundColor:'rgba(251,146,60,0.08)', fill:true, tension:0.3, pointRadius:3 }]
+    },
+    options:{ responsive:true, plugins:{legend:{display:false}},
+      scales:{ x:{ticks:{font:{size:10},maxTicksLimit:10},grid:{display:false}}, y:{ticks:{callback:v=>v+' L',font:{size:10}}} } }
+  });
+  {% endif %}
+  {% if depreciation %}
+  const deprData = {{ depreciation_json | safe }};
+  new Chart(document.getElementById('depreciationChart'), {
+    type:'line', data:{ labels:deprData.map(d=>d.year),
+      datasets:[{ label:'Est. value', data:deprData.map(d=>d.value), borderColor:'#818cf8', backgroundColor:'rgba(129,140,248,0.08)', fill:true, tension:0.2, pointRadius:4 }]
+    },
+    options:{ responsive:true, plugins:{legend:{display:false}},
+      scales:{ x:{grid:{display:false},ticks:{font:{size:10}}}, y:{ticks:{callback:v=>cur+v.toLocaleString(),font:{size:10}}} } }
+  });
+  {% endif %}
+</script>
+{% endblock %}

@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Import Data — {{ app_title }}{% endblock %}
+{% block content %}
+
+<div class="mb-6">
+  <h1 class="text-xl font-bold text-white">Import Data</h1>
+  <p class="text-slate-400 text-sm mt-0.5">Import your existing data from a CSV or Excel file.</p>
+</div>
+
+{% if step == 'upload' %}
+<!-- STEP 1: Upload form -->
+<div class="max-w-xl">
+  <div class="card mb-4">
+    <h2 class="text-sm font-semibold text-slate-300 mb-4">Expected Format</h2>
+    <p class="text-xs text-slate-400 mb-3">Your file should have columns with these names (Finnish or English, any order):</p>
+    <div class="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs mb-4">
+      {% for fi, en in [
+        ("PVM", "Date — DD.MM.YYYY"),
+        ("Bensa", "Fuel cost (€)"),
+        ("Litrat", "Liters"),
+        ("Mittarilukema", "Odometer (km)"),
+        ("Huolto", "Maintenance cost (€)"),
+        ("Katsastus", "Inspection cost (€)"),
+        ("Renkaat", "Tires cost (€)"),
+        ("Vakuutukset", "Insurance cost (€)"),
+        ("Muu", "Other cost (€)"),
+        ("Huom!", "Notes"),
+      ] %}
+      <div class="flex gap-2"><span class="font-mono text-blue-300 w-28 shrink-0">{{ fi }}</span><span class="text-slate-500">→ {{ en }}</span></div>
+      {% endfor %}
+    </div>
+    <div class="bg-slate-900/60 border border-slate-700/60 rounded-lg px-4 py-3 text-xs text-slate-400">
+      <strong class="text-slate-300">Tips:</strong>
+      One row can have multiple cost types (e.g., fuel + insurance on the same date — they will become separate entries).
+      Finnish number format (comma as decimal: <code class="text-blue-300">89,73</code>) and dates (<code class="text-blue-300">DD.MM.YYYY</code>) are auto-detected.
+      Duplicate fuel entries (same odometer reading) are skipped automatically.
+    </div>
+  </div>
+
+  <div class="card">
+    {% if error %}
+    <div class="mb-4 px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-300 text-sm">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" action="/import" enctype="multipart/form-data" class="space-y-5">
+      <div>
+        <label class="form-label">File <span class="text-red-400">*</span></label>
+        <div class="border-2 border-dashed border-slate-600 hover:border-blue-500 rounded-xl p-8 text-center transition-colors cursor-pointer relative" id="dropZone">
+          <input type="file" name="file" id="fileInput" accept=".csv,.xlsx,.xls" required
+            class="absolute inset-0 opacity-0 w-full h-full cursor-pointer"/>
+          <div id="dropLabel">
+            <div class="text-3xl mb-2">📂</div>
+            <p class="text-slate-300 text-sm font-medium">Drop your CSV or Excel file here</p>
+            <p class="text-slate-500 text-xs mt-1">or click to browse · .csv, .xlsx supported</p>
+          </div>
+          <div id="fileSelected" class="hidden">
+            <div class="text-3xl mb-2">✅</div>
+            <p id="fileName" class="text-slate-200 text-sm font-medium"></p>
+            <p class="text-slate-500 text-xs mt-1">Click to choose a different file</p>
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="btn-primary w-full justify-center py-2.5">Parse &amp; Preview →</button>
+    </form>
+  </div>
+</div>
+
+{% elif step == 'preview' %}
+<!-- STEP 2: Preview -->
+<div class="mb-5 flex items-center justify-between">
+  <div>
+    <p class="text-slate-300 text-sm">From: <span class="text-white font-medium">{{ filename }}</span></p>
+    <p class="text-slate-400 text-sm mt-1">
+      Found <strong class="text-white">{{ entries | length }}</strong> entries:
+      <span class="text-blue-400">{{ counts.fuel }} fuel</span> ·
+      <span class="text-orange-400">{{ counts.maintenance }} maintenance</span> ·
+      <span class="text-emerald-400">{{ counts.inspection }} inspection</span>
+    </p>
+  </div>
+  <a href="/import" class="btn-secondary">← Upload different file</a>
+</div>
+
+<div class="card overflow-hidden p-0 mb-5">
+  <table class="w-full text-sm">
+    <thead>
+      <tr class="border-b border-slate-700/60 bg-slate-800/80">
+        <th class="th">#</th>
+        <th class="th">Date</th>
+        <th class="th">Type</th>
+        <th class="th">Description</th>
+        <th class="th text-right">Cost</th>
+        <th class="th text-right">Liters</th>
+        <th class="th text-right">Odometer</th>
+        <th class="th">Notes</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-700/30">
+      {% for e in entries %}
+      <tr class="hover:bg-slate-700/20">
+        <td class="td text-slate-600 text-xs">{{ loop.index }}</td>
+        <td class="td text-slate-300 whitespace-nowrap">{{ e.date }}</td>
+        <td class="td">
+          {% if e.entry_type == 'fuel' %}<span class="badge bg-blue-500/20 text-blue-300">⛽ Fuel</span>
+          {% elif e.entry_type == 'maintenance' %}<span class="badge bg-orange-500/20 text-orange-300">🔧 {{ e.category }}</span>
+          {% else %}<span class="badge bg-emerald-500/20 text-emerald-300">📋 Inspection</span>
+          {% endif %}
+        </td>
+        <td class="td text-slate-200">{{ e.description if e.entry_type != 'fuel' else (e.liters | string + ' L') }}</td>
+        <td class="td text-right font-semibold text-white">
+          {% if e.entry_type == 'fuel' %}{{ currency }}{{ "%.2f"|format(e.fuel_cost) }}
+          {% else %}{{ currency }}{{ "%.2f"|format(e.cost) }}{% endif %}
+        </td>
+        <td class="td text-right text-slate-400">{% if e.entry_type == 'fuel' %}{{ "%.2f"|format(e.liters) }}{% else %}<span class="text-slate-700">—</span>{% endif %}</td>
+        <td class="td text-right text-slate-400">{% if e.entry_type == 'fuel' %}{{ "%.0f"|format(e.odometer) }}{% else %}<span class="text-slate-700">—</span>{% endif %}</td>
+        <td class="td text-xs text-slate-500 max-w-xs truncate">{{ e.notes }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="flex gap-3 items-center">
+  <form method="post" action="/import/confirm">
+    <input type="hidden" name="temp_id" value="{{ temp_id }}"/>
+    <button type="submit" class="btn-primary px-6 py-2.5">
+      ✓ Import {{ entries | length }} Entries
+    </button>
+  </form>
+  <a href="/import" class="btn-secondary">Cancel</a>
+  <span class="text-xs text-slate-500 ml-2">Duplicate odometer readings were already skipped.</span>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const input = document.getElementById('fileInput');
+  if (input) {
+    input.addEventListener('change', () => {
+      const f = input.files[0];
+      if (f) {
+        document.getElementById('dropLabel').classList.add('hidden');
+        document.getElementById('fileSelected').classList.remove('hidden');
+        document.getElementById('fileName').textContent = f.name;
+      }
+    });
+  }
+</script>
+{% endblock %}

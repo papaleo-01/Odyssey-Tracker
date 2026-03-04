@@ -1,0 +1,26 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Systemd service file for Odyssey Tracker
+#
+# Copy to: /etc/systemd/system/odyssey-tracker.service
+# Then run:
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable odyssey-tracker
+#   sudo systemctl start odyssey-tracker
+# ─────────────────────────────────────────────────────────────────────────────
+
+[Unit]
+Description=Odyssey Tracker
+After=network.target
+
+[Service]
+Type=simple
+# !! CHANGE THESE to your actual username and path !!
+User=YOUR_USERNAME
+WorkingDirectory=/home/YOUR_USERNAME/odyssey-tracker
+ExecStart=/home/YOUR_USERNAME/odyssey-tracker/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+Restart=on-failure
+RestartSec=5
+EnvironmentFile=/home/YOUR_USERNAME/odyssey-tracker/.env
+
+[Install]
+WantedBy=multi-user.target

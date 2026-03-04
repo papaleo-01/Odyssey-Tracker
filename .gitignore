@@ -1,0 +1,11 @@
+venv/
+.env
+data/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.DS_Store
+*.bak
+CLAUDE.md
+.idea/
+.vscode/
