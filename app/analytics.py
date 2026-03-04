@@ -106,31 +106,42 @@ def compute_summary(car: "Car") -> dict:
 
 # ── Monthly breakdown ─────────────────────────────────────────────────────────
 
+_CAT_KEY = {"Service": "service", "Tyres": "tyres", "Insurance": "insurance", "Road Tax": "road_tax"}
+
+
 def compute_monthly_costs(car: "Car") -> list[dict]:
-    monthly: dict[str, dict] = defaultdict(lambda: {"fuel": 0.0, "maintenance": 0.0, "inspection": 0.0})
+    def _blank():
+        return {"fuel": 0.0, "service": 0.0, "tyres": 0.0,
+                "insurance": 0.0, "road_tax": 0.0, "inspection": 0.0, "other": 0.0}
+
+    monthly: dict[str, dict] = defaultdict(_blank)
 
     for e in car.fuel_entries:
-        key = e.date.strftime("%Y-%m")
-        monthly[key]["fuel"] += e.total_cost
+        monthly[e.date.strftime("%Y-%m")]["fuel"] += e.total_cost
 
     for e in car.maintenance_entries:
-        key = e.date.strftime("%Y-%m")
-        monthly[key]["maintenance"] += e.cost
+        key = _CAT_KEY.get(e.category or "", "other")
+        monthly[e.date.strftime("%Y-%m")][key] += e.cost
 
     for e in car.inspection_entries:
-        key = e.date.strftime("%Y-%m")
-        monthly[key]["inspection"] += e.cost
+        monthly[e.date.strftime("%Y-%m")]["inspection"] += e.cost
 
     result = []
     for month_key in sorted(monthly.keys()):
         row = monthly[month_key]
-        total = row["fuel"] + row["maintenance"] + row["inspection"]
+        total = sum(row.values())
         result.append({
             "month": month_key,
             "label": datetime.strptime(month_key, "%Y-%m").strftime("%b %Y"),
             "fuel": round(row["fuel"], 2),
-            "maintenance": round(row["maintenance"], 2),
+            "service": round(row["service"], 2),
+            "tyres": round(row["tyres"], 2),
+            "insurance": round(row["insurance"], 2),
+            "road_tax": round(row["road_tax"], 2),
             "inspection": round(row["inspection"], 2),
+            "other": round(row["other"], 2),
+            # keep aggregate for yearly table
+            "maintenance": round(row["service"] + row["tyres"] + row["insurance"] + row["road_tax"] + row["other"], 2),
             "total": round(total, 2),
         })
     return result

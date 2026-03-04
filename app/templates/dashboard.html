@@ -131,9 +131,13 @@
     type: 'bar',
     data: { labels: monthly.map(m => m.label),
       datasets: [
-        { label: 'Fuel', data: monthly.map(m => m.fuel), backgroundColor: '#3b82f6', borderRadius: 3 },
-        { label: 'Maintenance', data: monthly.map(m => m.maintenance), backgroundColor: '#fb923c', borderRadius: 3 },
-        { label: 'Inspection', data: monthly.map(m => m.inspection), backgroundColor: '#34d399', borderRadius: 3 },
+        { label: 'Fuel',      data: monthly.map(m => m.fuel),       backgroundColor: '#3b82f6', borderRadius: 3 },
+        { label: 'Service',   data: monthly.map(m => m.service),    backgroundColor: '#fb923c', borderRadius: 3 },
+        { label: 'Tyres',     data: monthly.map(m => m.tyres),      backgroundColor: '#a78bfa', borderRadius: 3 },
+        { label: 'Insurance', data: monthly.map(m => m.insurance),  backgroundColor: '#fbbf24', borderRadius: 3 },
+        { label: 'Road Tax',  data: monthly.map(m => m.road_tax),   backgroundColor: '#22d3ee', borderRadius: 3 },
+        { label: 'MOT',       data: monthly.map(m => m.inspection), backgroundColor: '#34d399', borderRadius: 3 },
+        { label: 'Other',     data: monthly.map(m => m.other),      backgroundColor: '#64748b', borderRadius: 3 },
       ]
     },
     options: { responsive: true,
