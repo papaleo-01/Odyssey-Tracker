@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.1.1] — 2026-03-04
+
+### Fixed
+- **422 error on Car Setup / Add Car** — `purchase_mileage` was a required `float` field; an empty browser input caused a parse failure. It is now optional and defaults to `0`.
+- **Import Data button in Log** — the empty-state card still linked to the removed `/import` route. Replaced with + Service and + Inspection buttons.
+
+### Changed
+- **Car switcher** — the sidebar vehicle selector is now a visibly styled dropdown with a chevron arrow and "Switch vehicle" label, making it discoverable for users with multiple cars.
+- **Number formatting** — all large prices, costs, and odometer readings now use a narrow-no-break-space thousands separator (`10 000` instead of `10000`). Applies to Dashboard, Analytics, Log live stats, and Car Setup valuation table.
+- **Maintenance categories** expanded from 17 to 31 entries, grouped into Engine & Fluids, Drivetrain, Electrical, Body & Comfort, Wear Parts, and Admin & Running Costs. New additions include Coolant, Brake Fluid, Transmission Fluid, Wheels & Alignment, Steering, Transmission, Clutch, Lights, Starter/Alternator, Windscreen, Interior, AC/Heating, Belts & Chains, MOT/Pre-inspection, Tolls, Accessories.
+- All routers now share a single `Jinja2Templates` instance (via `app/templates_config.py`) so custom filters are available everywhere.
+
+---
+
 ## [1.1.0] — 2026-03-04
 
 ### Added
