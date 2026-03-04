@@ -1,17 +1,15 @@
 from datetime import date
 from fastapi import APIRouter, Request, Depends, UploadFile, File
 from fastapi.responses import RedirectResponse, FileResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from pathlib import Path
 
 import app.auth as auth_module
 from app.database import get_db
 from app.config import CURRENCY, APP_TITLE, DB_PATH
 from app.utils import get_selected_car
+from app.templates_config import templates
 
 router = APIRouter(prefix="/settings")
-templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
 
 
 def _guard(request: Request):

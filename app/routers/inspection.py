@@ -1,8 +1,6 @@
 from fastapi import APIRouter, Request, Form, Depends
 from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from pathlib import Path
 from datetime import date
 from typing import Optional
 
@@ -12,9 +10,9 @@ from app.database import get_db
 from app.schemas import InspectionEntryCreate
 from app.config import CURRENCY, APP_TITLE
 from app.utils import get_selected_car
+from app.templates_config import templates
 
 router = APIRouter(prefix="/inspection")
-templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
 
 
 def _ctx(request: Request, cars=None, **kwargs):

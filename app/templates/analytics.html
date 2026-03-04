@@ -8,8 +8,8 @@
 
 <!-- KPIs -->
 <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-  <div class="stat-card"><span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Total Cost</span><span class="text-2xl font-bold text-white">{{ currency }}{{ "%.0f"|format(summary.total_cost) }}</span><span class="text-xs text-slate-500">all time</span></div>
-  <div class="stat-card"><span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">KM Tracked</span><span class="text-2xl font-bold text-white">{{ "%.0f"|format(summary.total_km) }}</span><span class="text-xs text-slate-500">km driven</span></div>
+  <div class="stat-card"><span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Total Cost</span><span class="text-2xl font-bold text-white">{{ currency }}{{ summary.total_cost|fmt_num }}</span><span class="text-xs text-slate-500">all time</span></div>
+  <div class="stat-card"><span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">KM Tracked</span><span class="text-2xl font-bold text-white">{{ summary.total_km|fmt_num }}</span><span class="text-xs text-slate-500">km driven</span></div>
   <div class="stat-card"><span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">All-in Cost/km</span><span class="text-2xl font-bold text-white">{% if summary.cost_per_km %}{{ currency }}{{ "%.3f"|format(summary.cost_per_km) }}{% else %}<span class="text-slate-600">—</span>{% endif %}</span><span class="text-xs text-slate-500">fuel+maint+insp</span></div>
   <div class="stat-card"><span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Fuel Cost/km</span><span class="text-2xl font-bold text-white">{% if summary.fuel_cost_per_km %}{{ currency }}{{ "%.3f"|format(summary.fuel_cost_per_km) }}{% else %}<span class="text-slate-600">—</span>{% endif %}</span><span class="text-xs text-slate-500">fuel only</span></div>
 </div>
@@ -40,10 +40,10 @@
         {% for row in yearly|reverse %}
         <tr class="hover:bg-slate-700/20">
           <td class="py-2 font-medium text-slate-300">{{ row.year }}</td>
-          <td class="py-2 text-right text-blue-400">{{ currency }}{{ "%.0f"|format(row.fuel) }}</td>
-          <td class="py-2 text-right text-orange-400">{{ currency }}{{ "%.0f"|format(row.maintenance) }}</td>
-          <td class="py-2 text-right text-emerald-400">{{ currency }}{{ "%.0f"|format(row.inspection) }}</td>
-          <td class="py-2 text-right font-bold text-white">{{ currency }}{{ "%.0f"|format(row.total) }}</td>
+          <td class="py-2 text-right text-blue-400">{{ currency }}{{ row.fuel|fmt_num }}</td>
+          <td class="py-2 text-right text-orange-400">{{ currency }}{{ row.maintenance|fmt_num }}</td>
+          <td class="py-2 text-right text-emerald-400">{{ currency }}{{ row.inspection|fmt_num }}</td>
+          <td class="py-2 text-right font-bold text-white">{{ currency }}{{ row.total|fmt_num }}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -56,10 +56,10 @@
 <div class="card mb-4">
   <h2 class="text-sm font-semibold text-slate-300 mb-4">Depreciation Estimate</h2>
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
-    <div><span class="text-xs text-slate-500">Purchase Price</span><div class="text-lg font-bold text-white">{{ currency }}{{ "%.0f"|format(depreciation.purchase_price) }}</div></div>
-    <div><span class="text-xs text-slate-500">Est. Value Now</span><div class="text-lg font-bold text-white">{{ currency }}{{ "%.0f"|format(depreciation.estimated_value) }}</div>{% if depreciation.current_market_value %}<div class="text-xs text-emerald-400">Actual: {{ currency }}{{ "%.0f"|format(depreciation.current_market_value) }}</div>{% endif %}</div>
-    <div><span class="text-xs text-slate-500">Total Depreciation</span><div class="text-lg font-bold text-red-400">-{{ currency }}{{ "%.0f"|format(depreciation.total_depreciation) }}</div><div class="text-xs text-slate-500">over {{ depreciation.years_owned }} yrs</div></div>
-    <div><span class="text-xs text-slate-500">Depreciation / km</span><div class="text-lg font-bold text-white">{% if depreciation.depreciation_per_km %}{{ currency }}{{ "%.3f"|format(depreciation.depreciation_per_km) }}{% else %}—{% endif %}</div><div class="text-xs text-slate-500">{{ currency }}{{ "%.0f"|format(depreciation.depreciation_per_year) }}/year est.</div></div>
+    <div><span class="text-xs text-slate-500">Purchase Price</span><div class="text-lg font-bold text-white">{{ currency }}{{ depreciation.purchase_price|fmt_num }}</div></div>
+    <div><span class="text-xs text-slate-500">Est. Value Now</span><div class="text-lg font-bold text-white">{{ currency }}{{ depreciation.estimated_value|fmt_num }}</div>{% if depreciation.current_market_value %}<div class="text-xs text-emerald-400">Actual: {{ currency }}{{ depreciation.current_market_value|fmt_num }}</div>{% endif %}</div>
+    <div><span class="text-xs text-slate-500">Total Depreciation</span><div class="text-lg font-bold text-red-400">-{{ currency }}{{ depreciation.total_depreciation|fmt_num }}</div><div class="text-xs text-slate-500">over {{ depreciation.years_owned }} yrs</div></div>
+    <div><span class="text-xs text-slate-500">Depreciation / km</span><div class="text-lg font-bold text-white">{% if depreciation.depreciation_per_km %}{{ currency }}{{ "%.3f"|format(depreciation.depreciation_per_km) }}{% else %}—{% endif %}</div><div class="text-xs text-slate-500">{{ currency }}{{ depreciation.depreciation_per_year|fmt_num }}/year est.</div></div>
   </div>
   <canvas id="depreciationChart" height="160"></canvas>
   <p class="text-xs text-slate-600 mt-2">15% annual declining-balance. Update "Current Market Value" in Car Setup for an actual figure.</p>
@@ -71,18 +71,18 @@
   <h2 class="text-sm font-semibold text-slate-300 mb-4">Full Summary</h2>
   <div class="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-2 text-sm">
     {% for label, val in [
-      ("Fuel cost", currency ~ "%.2f"|format(summary.total_fuel_cost)),
-      ("Maintenance cost", currency ~ "%.2f"|format(summary.total_maintenance_cost)),
-      ("Inspection cost", currency ~ "%.2f"|format(summary.total_inspection_cost)),
+      ("Fuel cost", currency ~ (summary.total_fuel_cost|fmt_num(2))),
+      ("Maintenance cost", currency ~ (summary.total_maintenance_cost|fmt_num(2))),
+      ("Inspection cost", currency ~ (summary.total_inspection_cost|fmt_num(2))),
       ("Total liters", "%.1f"|format(summary.total_fuel_liters) ~ " L"),
       ("Avg price/liter", currency ~ "%.4f"|format(summary.avg_price_per_liter) if summary.avg_price_per_liter else "—"),
       ("Avg consumption", "%.2f"|format(summary.avg_consumption_l100) ~ " L/100km" if summary.avg_consumption_l100 else "—"),
-      ("Total km tracked", "%.0f"|format(summary.total_km) ~ " km"),
+      ("Total km tracked", (summary.total_km|fmt_num) ~ " km"),
       ("All-in cost/km", currency ~ "%.4f"|format(summary.cost_per_km) if summary.cost_per_km else "—"),
       ("Fuel cost/km", currency ~ "%.4f"|format(summary.fuel_cost_per_km) if summary.fuel_cost_per_km else "—"),
       ("Fill-ups logged", summary.fuel_entry_count),
       ("Service records", summary.maintenance_entry_count),
-      ("Current odometer", "%.0f"|format(summary.latest_odometer) ~ " km" if summary.latest_odometer else "—"),
+      ("Current odometer", (summary.latest_odometer|fmt_num) ~ " km" if summary.latest_odometer else "—"),
     ] %}
     <div class="flex justify-between border-b border-slate-700/40 pb-1.5"><span class="text-slate-500">{{ label }}</span><span class="font-semibold text-slate-200">{{ val }}</span></div>
     {% endfor %}

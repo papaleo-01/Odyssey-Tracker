@@ -1,8 +1,6 @@
 from fastapi import APIRouter, Request, Form, Depends
 from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from pathlib import Path
 from datetime import date
 from typing import Optional
 
@@ -13,9 +11,9 @@ from app.database import get_db
 from app.schemas import FuelEntryCreate
 from app.config import CURRENCY, APP_TITLE
 from app.utils import get_selected_car
+from app.templates_config import templates
 
 router = APIRouter(prefix="/fuel")
-templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
 
 FUEL_TYPES = ["Diesel", "Petrol", "E10", "E5", "LPG", "CNG", "Electric"]
 

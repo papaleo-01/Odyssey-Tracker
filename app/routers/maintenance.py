@@ -1,8 +1,6 @@
 from fastapi import APIRouter, Request, Form, Depends
 from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from pathlib import Path
 from datetime import date
 from typing import Optional
 
@@ -12,14 +10,26 @@ from app.database import get_db
 from app.schemas import MaintenanceEntryCreate
 from app.config import CURRENCY, APP_TITLE
 from app.utils import get_selected_car
+from app.templates_config import templates
 
 router = APIRouter(prefix="/maintenance")
-templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
 
 CATEGORIES = [
-    "Oil Change", "Tires", "Brakes", "Battery", "Filters", "Wipers",
-    "Belts", "Suspension", "Exhaust", "Electrical", "Body/Paint",
-    "Insurance", "Road Tax", "Parking", "Car Wash", "General", "Other",
+    # Engine & Fluids
+    "Oil Change", "Filters", "Coolant", "Brake Fluid", "Transmission Fluid",
+    # Drivetrain & Brakes
+    "Brakes", "Tires", "Wheels & Alignment", "Suspension", "Steering",
+    "Transmission", "Clutch",
+    # Electrical & Lighting
+    "Battery", "Electrical", "Lights", "Starter / Alternator",
+    # Body & Comfort
+    "Body/Paint", "Windscreen", "Wipers", "Interior", "AC / Heating",
+    # Wear Parts
+    "Belts & Chains", "Exhaust",
+    # Admin & Running Costs
+    "Insurance", "Road Tax", "MOT / Pre-inspection", "Parking", "Tolls",
+    # General
+    "Car Wash", "Accessories", "General", "Other",
 ]
 
 

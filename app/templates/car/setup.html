@@ -62,7 +62,7 @@
           {% for v in valuations %}
           <tr>
             <td class="td">{{ v.date.strftime('%d %b %Y') }}</td>
-            <td class="td font-medium text-white">{{ currency }}{{ "{:,.0f}".format(v.value) }}</td>
+            <td class="td font-medium text-white">{{ currency }}{{ v.value|fmt_num }}</td>
             <td class="td text-slate-400">{{ v.notes or '—' }}</td>
             <td class="td">
               <form method="post" action="/car/valuation/{{ v.id }}/delete" onsubmit="return confirm('Delete this valuation?')">
