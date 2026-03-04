@@ -26,6 +26,7 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
     recent_maintenance = car.maintenance_entries[:3]
     recent_inspections = car.inspection_entries[:2]
     monthly = analytics.compute_monthly_costs(car)[-12:]
+    by_category = {item["category"]: item["total"] for item in analytics.compute_maintenance_by_category(car)}
 
     return templates.TemplateResponse("dashboard.html", {
         "request": request,
@@ -36,6 +37,7 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
         "recent_maintenance": recent_maintenance,
         "recent_inspections": recent_inspections,
         "monthly": monthly,
+        "by_category": by_category,
         "currency": CURRENCY,
         "app_title": APP_TITLE,
     })

@@ -15,21 +15,11 @@ from app.templates_config import templates
 router = APIRouter(prefix="/maintenance")
 
 CATEGORIES = [
-    # Engine & Fluids
-    "Oil Change", "Filters", "Coolant", "Brake Fluid", "Transmission Fluid",
-    # Drivetrain & Brakes
-    "Brakes", "Tires", "Wheels & Alignment", "Suspension", "Steering",
-    "Transmission", "Clutch",
-    # Electrical & Lighting
-    "Battery", "Electrical", "Lights", "Starter / Alternator",
-    # Body & Comfort
-    "Body/Paint", "Windscreen", "Wipers", "Interior", "AC / Heating",
-    # Wear Parts
-    "Belts & Chains", "Exhaust",
-    # Admin & Running Costs
-    "Insurance", "Road Tax", "MOT / Pre-inspection", "Parking", "Tolls",
-    # General
-    "Car Wash", "Accessories", "General", "Other",
+    "Service",    # all routine work: oil, fluids, filters, belts, brakes, general
+    "Tyres",      # new tyres, rotation, balancing, alignment
+    "Insurance",  # annual insurance policy
+    "Road Tax",   # annual road tax / registration
+    "Other",
 ]
 
 
@@ -124,7 +114,7 @@ async def maintenance_edit_submit(
         "date": date_field, "description": description, "category": category,
         "cost": cost, "odometer": odometer, "shop": shop or None, "notes": notes or None,
     })
-    return RedirectResponse("/maintenance", status_code=302)
+    return RedirectResponse("/log", status_code=302)
 
 
 @router.post("/{entry_id}/delete")
