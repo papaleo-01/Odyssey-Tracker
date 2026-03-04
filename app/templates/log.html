@@ -7,10 +7,13 @@
     <h1 class="text-xl font-bold text-white">Log</h1>
     <p class="text-slate-400 text-sm mt-0.5">{{ entries | length }} total entries</p>
   </div>
-  <div class="flex gap-2">
-    <a href="/fuel/add" class="btn-primary">+ Fuel</a>
-    <a href="/maintenance/add" class="btn-secondary">+ Service</a>
-    <a href="/inspection/add" class="btn-secondary">+ Inspection</a>
+  <div class="relative">
+    <button onclick="document.getElementById('addDrop').classList.toggle('hidden')" class="btn-primary">+ Add Entry ▾</button>
+    <div id="addDrop" class="hidden absolute right-0 mt-1 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl z-10 w-44 py-1">
+      <a href="/fuel/add" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">⛽ Fuel</a>
+      <a href="/maintenance/add" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">🔧 Service</a>
+      <a href="/inspection/add" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">📋 Inspection</a>
+    </div>
   </div>
 </div>
 
@@ -58,7 +61,6 @@
         <th class="th text-right">L/100km</th>
         <th class="th text-right">km/tank</th>
         <th class="th text-right">Odometer</th>
-        <th class="th">Notes</th>
         <th class="th"></th>
       </tr>
     </thead>
@@ -89,12 +91,11 @@
         </td>
         <td class="td text-right text-slate-400">{% if e.km_driven %}<span class="text-slate-300">{{ "%.0f"|format(e.km_driven) }}</span>{% else %}<span class="text-slate-700">—</span>{% endif %}</td>
         <td class="td text-right text-slate-500">{% if e.odometer %}{{ "%.0f"|format(e.odometer) }}{% else %}<span class="text-slate-700">—</span>{% endif %}</td>
-        <td class="td text-slate-500 max-w-xs truncate text-xs">{{ e.notes }}</td>
-        <td class="td">
-          <div class="flex gap-2 justify-end whitespace-nowrap">
-            <a href="{{ e.edit_url }}" class="text-xs text-blue-400 hover:text-blue-300">Edit</a>
+        <td class="td w-px whitespace-nowrap">
+          <div class="flex gap-1.5 justify-end">
+            <a href="{{ e.edit_url }}" class="btn-secondary py-1 px-2 text-xs">Edit</a>
             <form method="post" action="{{ e.delete_url }}" onsubmit="return confirm('Delete this entry?')">
-              <button type="submit" class="text-xs text-red-500 hover:text-red-400">Del</button>
+              <button type="submit" class="btn-danger py-1 px-2">Del</button>
             </form>
           </div>
         </td>
@@ -115,9 +116,9 @@
   <h2 class="text-lg font-semibold text-white mb-1">No entries yet</h2>
   <p class="text-slate-500 text-sm mb-5">Start by adding your first entry.</p>
   <div class="flex gap-3 justify-center">
-    <a href="/fuel/add" class="btn-primary">+ Add Fuel</a>
-    <a href="/maintenance/add" class="btn-secondary">+ Service</a>
-    <a href="/inspection/add" class="btn-secondary">+ Inspection</a>
+    <a href="/fuel/add" class="btn-primary">⛽ Fuel</a>
+    <a href="/maintenance/add" class="btn-secondary">🔧 Service</a>
+    <a href="/inspection/add" class="btn-secondary">📋 Inspection</a>
   </div>
 </div>
 {% endif %}
