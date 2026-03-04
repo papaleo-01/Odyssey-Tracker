@@ -10,10 +10,10 @@ Runs on your Ubuntu home server. No cloud. No subscription. Your data stays with
 
 - **Multiple cars** — track as many vehicles as you want; switch between them from the sidebar dropdown
 - **Fuel log** — fill-ups: liters, total cost, odometer, fuel type, gas station
-- **Maintenance log** — services, repairs, oil changes, tires, insurance, road tax, parking, and more
-- **Inspection log** — annual inspection dates, costs, validity, and expiry alerts
+- **Maintenance log** — categorised as Service · Tyres · Insurance · Road Tax · Other
+- **Inspection log** (MOT) — dates, costs, validity, and expiry alerts on the dashboard
 - **Unified log** — all entry types in one filterable, sortable view (filter by year and type)
-- **Analytics** — cost per km, average consumption, fuel price history, monthly/yearly breakdown, depreciation curve
+- **Analytics** — cost per km, avg consumption, fuel price history, monthly/yearly breakdown, depreciation curve, and a 7-slice cost breakdown (Fuel · Service · Tyres · Insurance · Road Tax · MOT · Other)
 - **Depreciation tracking** — record market valuations over time for a real depreciation curve; falls back to a 15% annual estimate if no valuations are recorded
 - **Database backup/restore** — download the SQLite file from Settings; restore from a backup with one click
 - **Dashboard** — quick overview with key stats and recent entries

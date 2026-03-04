@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.1.3] — 2026-03-04
+
+### Fixed
+- **422 on odometer when editing entries** — `odometer` was declared as `float = Form(...)` in the fuel add/edit handlers; an empty field sent by the browser caused Pydantic v2 to throw a parse error. Changed to `Optional[str] = Form(None)` with manual conversion in fuel and maintenance routers, and updated `FuelEntryCreate.odometer` to `Optional[float]`.
+
+### Changed
+- **Analytics** — "Service Cost by Category" chart renamed to "Maintenance Cost by Category" to avoid confusion with the "Service" category name.
+
+### Removed
+- **openpyxl** removed from `requirements.txt` — import feature was removed in 1.1.0; the dependency is no longer needed.
+
+---
+
 ## [1.1.2] — 2026-03-04
 
 ### Added

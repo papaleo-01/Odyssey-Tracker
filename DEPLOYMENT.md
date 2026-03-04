@@ -45,7 +45,7 @@ chmod +x setup.sh run.sh
 
 This will:
 - Create a Python virtual environment in `venv/`
-- Install all dependencies (including `openpyxl` for Excel import)
+- Install all dependencies
 - Generate a `.env` file with a random secret key
 - Create the `data/` and `data/temp/` directories
 
@@ -225,5 +225,3 @@ sudo systemctl daemon-reload
 | Can't connect from other devices | Check `HOST=0.0.0.0` in `.env` and firewall: `sudo ufw allow 8000` |
 | Forgot password | Edit `.env`, change `APP_PASSWORD=`, then `sudo systemctl restart odyssey-tracker` |
 | Database corrupted | Restore from backup: `cp backup.db data/car_tracker.db` |
-| Excel import fails | Ensure file is `.xlsx` format (not `.xls`); re-save from Excel/LibreOffice |
-| Import preview shows wrong values | Check that Finnish date format (DD.MM.YYYY) and comma decimals are used |
