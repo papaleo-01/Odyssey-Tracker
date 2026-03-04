@@ -28,6 +28,7 @@ async def analytics_page(request: Request, db: Session = Depends(get_db)):
     fuel_price_history = analytics.compute_fuel_price_history(car)
     depreciation = analytics.compute_depreciation(car)
     fuel_stats = analytics.compute_fuel_stats(car.fuel_entries)
+    by_category = analytics.compute_maintenance_by_category(car)
 
     consumption_history = [
         {"date": s["entry"].date.isoformat(), "consumption": s["consumption_l100"]}
@@ -47,6 +48,8 @@ async def analytics_page(request: Request, db: Session = Depends(get_db)):
         "monthly_json": json.dumps(monthly),
         "depreciation": depreciation,
         "depreciation_json": json.dumps(depreciation["curve"] if depreciation else []),
+        "by_category": by_category,
+        "by_category_json": json.dumps(by_category),
         "currency": CURRENCY,
         "app_title": APP_TITLE,
     })

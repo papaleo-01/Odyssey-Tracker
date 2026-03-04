@@ -66,6 +66,14 @@
 </div>
 {% endif %}
 
+<!-- Maintenance by category -->
+{% if by_category %}
+<div class="card mb-4">
+  <h2 class="text-sm font-semibold text-slate-300 mb-4">Service Cost by Category</h2>
+  <canvas id="categoryChart" height="120"></canvas>
+</div>
+{% endif %}
+
 <!-- Stats table -->
 <div class="card">
   <h2 class="text-sm font-semibold text-slate-300 mb-4">Full Summary</h2>
@@ -126,6 +134,25 @@
     },
     options:{ responsive:true, plugins:{legend:{display:false}},
       scales:{ x:{ticks:{font:{size:10},maxTicksLimit:10},grid:{display:false}}, y:{ticks:{callback:v=>v+' L',font:{size:10}}} } }
+  });
+  {% endif %}
+  {% if by_category %}
+  const catData = {{ by_category_json | safe }};
+  if (catData.length) new Chart(document.getElementById('categoryChart'), {
+    type: 'bar',
+    data: {
+      labels: catData.map(d => d.category),
+      datasets: [{ data: catData.map(d => d.total), backgroundColor: '#fb923c', borderRadius: 4 }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { callback: v => cur + v.toLocaleString(), font: { size: 10 } } },
+        y: { ticks: { font: { size: 11 } } }
+      }
+    }
   });
   {% endif %}
   {% if depreciation %}

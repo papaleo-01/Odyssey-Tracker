@@ -235,6 +235,19 @@ def compute_depreciation(car: "Car") -> dict | None:
     }
 
 
+# ── Maintenance breakdown by category ─────────────────────────────────────────
+
+def compute_maintenance_by_category(car: "Car") -> list[dict]:
+    """Returns maintenance cost grouped by category, sorted by total cost descending."""
+    totals: dict[str, float] = defaultdict(float)
+    for e in car.maintenance_entries:
+        totals[e.category or "Other"] += e.cost
+    return [
+        {"category": cat, "total": round(total, 2)}
+        for cat, total in sorted(totals.items(), key=lambda x: x[1], reverse=True)
+    ]
+
+
 # ── Unified log entries ───────────────────────────────────────────────────────
 
 def get_all_entries(car: "Car") -> list[dict]:
